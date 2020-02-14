@@ -92,9 +92,9 @@ router.post('/login', (req,res)=>{
             if(!user){
                 res.status(401).send('Invalid email')
             }
-            else{
+            else{           
 
-                bcrypt.compare(user.password,userData.password).then(same=>{
+                bcrypt.compare(userData.password,user.password).then(same=>{
                     if(same){
                         let payload = { subject: user._id }
                      let token = jwt.sign(payload, environment.secretKey, { expiresIn: 60 * 60 })                     
