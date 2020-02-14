@@ -66,7 +66,7 @@ router.post('/register', (req, res) => {
                 /** saving the user*/
             }
             else {
-                message.warning(response, from)
+                //message.warning(response, from)
                 res.status(400).send(`User already exists`)
             }
         }
@@ -82,6 +82,7 @@ router.post('/login', (req,res)=>{
 
 
     let userData = req.body
+    
 
     User.findOne({email:userData.email}, (error, user)=>{
         if(error){
@@ -91,17 +92,21 @@ router.post('/login', (req,res)=>{
             if(!user){
                 res.status(401).send('Invalid email')
             }
-            else
-                if (!bcrypt.compare(user.password,userData.password)) {
-                    res.status(401).send('Invalid password')
-                }
-                else{                    
-                     let payload = { subject: user._id }
+            else{
+
+                bcrypt.compare(user.password,userData.password).then(same=>{
+                    if(same){
+                        let payload = { subject: user._id }
                      let token = jwt.sign(payload, environment.secretKey, { expiresIn: 60 * 60 })                     
                      res.status(200).send({ token })
-                     
-                }
-        }
+                    }
+                    else{
+                        res.status(401).send('Invalid password')
+                    }
+                })
+            }
+                
+        }  
 
     })
 

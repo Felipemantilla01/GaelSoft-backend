@@ -20,5 +20,8 @@ chore: Actualizacion de tareas de build, configuracion del admin. de paquetes; S
 
 ## API V1 
 
-### register new user 
+### Register new user 
+[POST] : {email:'xxxxxx', password:''xxxxxxx'}
+
+### Login user 
 [POST] : {email:'xxxxxx', password:''xxxxxxx'}
