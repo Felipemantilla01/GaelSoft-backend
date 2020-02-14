@@ -1,0 +1,6 @@
+# BACKEND GAEL SOFT
+
+## API V1 
+
+### register new user 
+[POST] : {email:'xxxxxx', password:''xxxxxxx'}

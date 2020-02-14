@@ -1,0 +1,96 @@
+[
+    {
+        "_id": "0001",
+        "type":"Investigacion",
+        "description": "Desarrollar un sistema JIRA",
+        "created": {
+            "by":"felipemantilla01",
+            "at":"2020-02-13T21:33:37.189Z"
+        },
+        "assigned":{
+            "to":"johan01",
+            "at":"2020-02-13T21:35:31.980Z"
+        },
+        "state":{
+            "todo":{
+                "state": "active"
+            },
+            "inProgress":{
+                "state":"inactive",
+                "at":""
+            },
+            "done":{
+                "state":"inactive",
+                "at":""
+            }
+        },
+        "comments":{
+
+        }
+    },
+    {
+        "_id": "0002",
+        "type":"Correccion",
+        "description": "planear infraestructura de la base de datos",
+        "created": {
+            "by":"felipemantilla01",
+            "at":"2020-02-13T21:33:37.189Z"
+        },
+        "assigned":{
+            "to":"yefferson01",
+            "at":"2020-02-13T21:35:31.980Z"
+        },
+        "state":{
+            "todo":{
+                "state": "inactive"
+            },
+            "inProgress":{
+                "state":"active",
+                "at":"2020-02-13T21:40:37.339Z"
+            },
+            "done":{
+                "state":"inactive",
+                "at":""
+            }
+        },
+        "comments":
+        [{
+            "text": "se realiza la implementacion de un archivo JSON",
+            "at":"2020-02-13T21:35:31.980Z"
+        },
+        {
+            "text": "Se reagrupa y actualiza",
+            "at":"2020-02-13T21:35:31.980Z"
+        }
+        ]   
+    },
+    {
+        "_id": "0003",
+        "type":"Investigacion",
+        "description": "Crear mas tareas para visualizar tabla",
+        "created": {
+            "by":"felipemantilla01",
+            "at":"2020-02-13T21:33:37.189Z"
+        },
+        "assigned":{
+            "to":"felipemantilla01",
+            "at":"2020-02-13T21:35:31.980Z"
+        },
+        "state":{
+            "todo":{
+                "state": "inactive"
+            },
+            "inProgress":{
+                "state":"inactive",
+                "at":""
+            },
+            "done":{
+                "state":"active",
+                "at":""
+            }
+        },
+        "comments":{
+
+        }
+    }
+]
