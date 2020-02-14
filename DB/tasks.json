@@ -2,6 +2,7 @@
     {
         "_id": "0001",
         "type":"Investigacion",
+        "project":"versioning",
         "description": "Desarrollar un sistema JIRA",
         "created": {
             "by":"felipemantilla01",
@@ -31,6 +32,7 @@
     {
         "_id": "0002",
         "type":"Correccion",
+        "project":"nextlevel",
         "description": "planear infraestructura de la base de datos",
         "created": {
             "by":"felipemantilla01",
@@ -67,6 +69,7 @@
     {
         "_id": "0003",
         "type":"Investigacion",
+        "project":"upLevel",
         "description": "Crear mas tareas para visualizar tabla",
         "created": {
             "by":"felipemantilla01",

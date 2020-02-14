@@ -30,6 +30,25 @@ mongoose.connect(db, err => {
     }
 })
 
+
+function verifyToken(req, res, next) {
+    //console.log(req.headers)
+    if (!req.headers.authorization) {
+        return res.status(401).send('Unauthorized request')
+    }
+    let token = req.headers.authorization.split(' ')[1]
+    //console.log(token)
+    if (token === 'null') {
+        return res.status(401).send('Unauthorized request')
+    }
+    let payload = jwt.verify(token, environment.secretKey)
+    if (!payload) {
+        return res.status(401).send('Unauthorized request')
+    }
+    req.userId = payload.subject
+    next()
+}
+
 /** routes for users */
 router.post('/register', (req, res) => {
     header.setHeaders(res)
@@ -71,10 +90,6 @@ router.post('/register', (req, res) => {
             }
         }
     })/** end verify the user email dont exists yet */
-
-
-
-
 })
 
 router.post('/login', (req,res)=>{
@@ -97,7 +112,7 @@ router.post('/login', (req,res)=>{
                 bcrypt.compare(userData.password,user.password).then(same=>{
                     if(same){
                         let payload = { subject: user._id }
-                     let token = jwt.sign(payload, environment.secretKey, { expiresIn: 60 * 60 })                     
+                     let token = jwt.sign(payload, environment.secretKey/*, { expiresIn: 60 * 60 }*/)                     
                      res.status(200).send({ token })
                     }
                     else{
@@ -116,6 +131,7 @@ router.post('/login', (req,res)=>{
 
 })
 
+/** directories */
 
 
 
@@ -127,7 +143,7 @@ router.get('/', (req, res) => {
     res.status(200).send({ status: 'ok', api: 'api v1', desc: 'first implementation' })
 })
 
-router.get('/tasks', (req, res) => {
+router.get('/tasks', verifyToken,(req, res) => {
     res.status(200).send(tasks)
 })
 
