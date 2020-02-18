@@ -46,6 +46,7 @@ function verifyToken(req, res, next) {
         return res.status(401).send('Unauthorized request')
     }
     req.userId = payload.subject
+    message.info(req.userId,from)
     next()
 }
 
@@ -125,17 +126,23 @@ router.post('/login', (req,res)=>{
 
     })
 
-
-
     
 
 })
 
+router.get('/users', (req,res)=>{
+    header.setHeaders(res)
+    User.find({}, (err,users)=>{
+        if(err){
+            res.status(500).send('Server error')
+        }else{
+            res.status(200).send(users)
+        }
+    })
+})
+
+
 /** directories */
-
-
-
-
 
 
 
