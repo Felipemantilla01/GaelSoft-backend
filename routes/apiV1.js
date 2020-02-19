@@ -47,7 +47,7 @@ function verifyToken(req, res, next) {
         return res.status(401).send('Unauthorized request')
     }
     req.username = payload.subject
-    message.info(req.userId,from)
+    message.info(req.username,from)
     next()
 }
 /** routes for users */
@@ -179,33 +179,66 @@ router.post('/tasks', verifyToken, (req,res)=>{
     
 })
 
-router.put('/tasks', verifyToken, (req,res)=>{
+router.put('/tasks', verifyToken, async (req,res)=>{
     taskData = req.body
     console.log(taskData)
 
     if (taskData.state === "inProgress") {
-        Task.findByIdAndUpdate(taskData._Id, {
-            "state": {
-                "todo": {
-                    "state": "inactive"
-                },
-                "inProgress": {
-                    "state": "active",
-                    "at": Date.now
-                }
+        try {
+            let doc = await Task.findById(taskData._id)        
+            doc.state.todo.state = "inactive"
+            doc.state.inProgress = {
+                state: "active",
+                at: new Date
             }
-        }, (err, response)=>{
-            if(err){
-                res.status(500).send('Error trying to update the task, try again')
-            }else{
-                res.status(200).send(response)
+            
+            doc = await Task.updateOne({_id:taskData._id},doc)
+            console.log(doc)
+            res.status(200).send(doc)
+        } catch (e) {
+            res.status(500).send('Error updating the task, try again')
+        }
+    }
+    if (taskData.state === "done") {
+        try {
+            let doc = await Task.findById(taskData._id)
+
+            if(doc.state.inProgress.at===null){
+                doc.state.inProgress.at = new Date
             }
-        } )
-    }
-    if(taskData.state==="done"){
 
+            doc.state.todo.state = "inactive"
+            doc.state.inProgress.state = "inactive"
+            doc.state.done = {
+                state: "active",
+                at: new Date
+            }
+            doc = await Task.updateOne({_id:taskData._id},doc)
+            console.log(doc)            
+            res.status(200).send(doc)
+            
+        } catch (e) {
+            res.status(500).send('Error updating the task, try again')
+        }
     }
 
+
+})
+
+router.delete('/tasks/:id', verifyToken, async (req,res)=>{
+    
+    let _id = req.params.id
+
+    try{    
+        await Task.deleteOne({_id})
+        res.status(200).send('task deleted successfully')
+
+    }catch(e){
+        res.status(500).send('Error deleting the task, try again')
+    }
+
+
+    
 
 })
 
