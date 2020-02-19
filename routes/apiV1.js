@@ -8,7 +8,7 @@ var header = require('../functions/headers')
 /** dependecies */
 var express = require('express')
 var router = express.Router()
-var tasks = require('../DB/tasks.json')
+var tasksJSON = require('../DB/tasks.json')
 
 /** jwt */
 const jwt = require('jsonwebtoken')
@@ -20,6 +20,7 @@ const saltRounds = 10;
 /** Database dependecies */
 const db = 'mongodb://localhost:27017/GaelSoft'
 const User = require('../models/user')
+const Task = require('../models/task')
 const mongoose = require('mongoose')
 
 mongoose.connect(db, err => {
@@ -45,11 +46,10 @@ function verifyToken(req, res, next) {
     if (!payload) {
         return res.status(401).send('Unauthorized request')
     }
-    req.userId = payload.subject
+    req.username = payload.subject
     message.info(req.userId,from)
     next()
 }
-
 /** routes for users */
 router.post('/register', (req, res) => {
     header.setHeaders(res)
@@ -112,7 +112,7 @@ router.post('/login', (req,res)=>{
 
                 bcrypt.compare(userData.password,user.password).then(same=>{
                     if(same){
-                        let payload = { subject: user._id }
+                        let payload = { subject: user.username}
                      let token = jwt.sign(payload, environment.secretKey/*, { expiresIn: 60 * 60 }*/)                     
                      res.status(200).send({ token })
                     }
@@ -151,7 +151,62 @@ router.get('/', (req, res) => {
 })
 
 router.get('/tasks', verifyToken,(req, res) => {
-    res.status(200).send(tasks)
+    
+    Task.find({}, (err, tasks)=>{
+        if(err){
+            res.status(500).send('Error Capturing the tasks')
+        }else{
+            res.status(200).send(tasks)
+        }
+    })
+
+})
+
+router.post('/tasks', verifyToken, (req,res)=>{
+    message.error(req.username,from)
+    let taskData = req.body
+    let task = new Task(taskData)
+    task.created.by=req.username
+
+    console.log(task)
+    task.save((err,taskSaved)=>{
+        if(err){
+            res.status(500).send('Error trying to save the task, try again')
+        }else{
+            res.status(200).send(taskSaved)
+        }
+    })
+    
+})
+
+router.put('/tasks', verifyToken, (req,res)=>{
+    taskData = req.body
+    console.log(taskData)
+
+    if (taskData.state === "inProgress") {
+        Task.findByIdAndUpdate(taskData._Id, {
+            "state": {
+                "todo": {
+                    "state": "inactive"
+                },
+                "inProgress": {
+                    "state": "active",
+                    "at": Date.now
+                }
+            }
+        }, (err, response)=>{
+            if(err){
+                res.status(500).send('Error trying to update the task, try again')
+            }else{
+                res.status(200).send(response)
+            }
+        } )
+    }
+    if(taskData.state==="done"){
+
+    }
+
+
 })
 
 
