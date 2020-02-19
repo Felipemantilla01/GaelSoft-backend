@@ -47,7 +47,7 @@ function verifyToken(req, res, next) {
         return res.status(401).send('Unauthorized request')
     }
     req.username = payload.subject
-    message.info(req.username,from)
+    //message.info(req.username,from)
     next()
 }
 /** routes for users */
@@ -143,8 +143,6 @@ router.get('/users', (req,res)=>{
 
 
 /** directories */
-
-
 
 router.get('/', (req, res) => {
     res.status(200).send({ status: 'ok', api: 'api v1', desc: 'first implementation' })
@@ -242,6 +240,42 @@ router.delete('/tasks/:id', verifyToken, async (req,res)=>{
 
 })
 
+
+router.get('/tasks/:id/comments', verifyToken, async (req,res)=>{
+    let _id = req.params.id
+    
+    try{
+        let task = await Task.findOne({_id})
+        res.status(200).send(task.comments)
+    }catch(e){
+        res.status(500).send('Error capturing the comments')
+    }
+    
+})
+
+router.post('/tasks/:id/comments', verifyToken, async (req, res) => {
+    try {
+        let taskData = req.body
+        var newComment = {
+            at: new Date,
+            message: taskData.comment
+        }
+
+        let task = await Task.findOne({ _id: taskData._id })
+
+        task.comments[task.comments.length] = newComment
+
+        let response = await Task.updateOne({ _id: taskData._id }, task)
+
+        console.log(response)
+        res.status(200).send(response)
+
+
+    } catch (error) {
+        res.status(500).send('Error updating the comments')
+    }
+
+})
 
 
 module.exports = router

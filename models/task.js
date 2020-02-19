@@ -35,7 +35,7 @@ const taskSchema = new Schema({
             at:{ type: Date, default: null }
         }
     },
-    comments:[{body:String, date:Date}]
+    comments:[{message:String, at:Date}]
 
 })
 
