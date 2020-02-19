@@ -21,6 +21,7 @@ const saltRounds = 10;
 const db = 'mongodb://localhost:27017/GaelSoft'
 const User = require('../models/user')
 const Task = require('../models/task')
+const Project = require('../models/project')
 const mongoose = require('mongoose')
 
 mongoose.connect(db, err => {
@@ -51,10 +52,17 @@ function verifyToken(req, res, next) {
     next()
 }
 /** routes for users */
-router.post('/register', (req, res) => {
+router.post('/register', async (req, res) => {
     header.setHeaders(res)
 
     let userData = req.body
+
+    let response = await User.findOne({username:userData.username})
+    if(response!==null)
+    {
+        res.status(400).send('Username already exists')
+        return(0)
+    }
 
     /** verify the user email dont exists yet*/
     User.findOne({ email: userData.email }, (error, response) => {
@@ -113,10 +121,16 @@ router.post('/login', (req,res)=>{
                 bcrypt.compare(userData.password,user.password).then(same=>{
                     if(same){
                         let payload = { subject: user.username}
-                     let token = jwt.sign(payload, environment.secretKey/*, { expiresIn: 60 * 60 }*/)                     
-                     res.status(200).send({ token })
+                        let token = jwt.sign(payload, environment.secretKey/*, { expiresIn: 60 * 60 }*/)
+                        res.status(200).send(
+                            {
+                                token,
+                                username: user.username,
+                                role:user.role
+                            }
+                        )
                     }
-                    else{
+                    else {
                         res.status(401).send('Invalid password')
                     }
                 })
@@ -166,7 +180,7 @@ router.post('/tasks', verifyToken, (req,res)=>{
     let task = new Task(taskData)
     task.created.by=req.username
 
-    console.log(task)
+    //console.log(task)
     task.save((err,taskSaved)=>{
         if(err){
             res.status(500).send('Error trying to save the task, try again')
@@ -179,7 +193,7 @@ router.post('/tasks', verifyToken, (req,res)=>{
 
 router.put('/tasks', verifyToken, async (req,res)=>{
     taskData = req.body
-    console.log(taskData)
+    //console.log(taskData)
 
     if (taskData.state === "inProgress") {
         try {
@@ -191,7 +205,7 @@ router.put('/tasks', verifyToken, async (req,res)=>{
             }
             
             doc = await Task.updateOne({_id:taskData._id},doc)
-            console.log(doc)
+            //console.log(doc)
             res.status(200).send(doc)
         } catch (e) {
             res.status(500).send('Error updating the task, try again')
@@ -212,7 +226,7 @@ router.put('/tasks', verifyToken, async (req,res)=>{
                 at: new Date
             }
             doc = await Task.updateOne({_id:taskData._id},doc)
-            console.log(doc)            
+            //console.log(doc)            
             res.status(200).send(doc)
             
         } catch (e) {
@@ -267,7 +281,7 @@ router.post('/tasks/:id/comments', verifyToken, async (req, res) => {
 
         let response = await Task.updateOne({ _id: taskData._id }, task)
 
-        console.log(response)
+        // console.log(response)
         res.status(200).send(response)
 
 
@@ -276,6 +290,40 @@ router.post('/tasks/:id/comments', verifyToken, async (req, res) => {
     }
 
 })
+
+router.post('/projects', verifyToken, async (req,res)=>{
+    let projectData = req.body
+    projectData.lead = req.username
+
+    // console.log(projectData)
+
+    let project = new Project(projectData)
+    project.save((err,projectSaved)=>{
+        if(err){
+            res.status(500).send('Error trying to save the project, try again')
+        }else{
+            res.status(200).send(projectSaved)
+        }
+    })
+
+})
+
+router.get('/projects', verifyToken, async (req,res)=>{
+   
+    
+    try {
+        let projects = await Project.find({})
+        res.status(200).send(projects)
+        // console.log(projects)
+    } catch (error) {
+        res.status(500).send('Error capturing the projects')
+    }
+    
+
+   
+
+})
+
 
 
 module.exports = router
