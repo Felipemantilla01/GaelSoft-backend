@@ -7,7 +7,9 @@ const userSchema = new Schema({
     created:{
         at:{ type: Date, default: Date.now }
     },
-    repository:String
+    repository:String,
+    description:String,
+    participants:[{_id:String, username:String}]
 })
 
 module.exports = mongoose.model('project',userSchema, 'projects')

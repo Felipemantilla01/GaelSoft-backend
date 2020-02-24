@@ -18,10 +18,49 @@ chore: Actualizacion de tareas de build, configuracion del admin. de paquetes; S
 
 # BACKEND GAEL SOFT
 
-## API V1 
+## API V1 --> localhost:3000/api/v1 + 
 
-### Register new user 
-[POST] : {email:'xxxxxx', password:''xxxxxxx'}
 
-### Login user 
-[POST] : {email:'xxxxxx', password:''xxxxxxx'}
+## --------------- USERS --------------------------
+
+### Register new user /register
+[POST] : {userModel}
+
+### Login user /login
+[POST] : {userModel}
+
+### Capture users /users
+[GET] : {} 
+
+
+## --------------- TASKS --------------------------
+
+### Capture Tasks /tasks
+[GET] : {}
+
+### Create new task /tasks
+[POST] : {taskModel}
+
+### Update task state /task
+[PUT] : {taskState}
+
+### Delete task  /task/:id
+[PUT] : {taskState}
+
+### Capture task comments /tasks/:id/comments
+[GET] : {}
+
+### Update task comments /tasks/:id/comments
+[POST] : {message}
+
+
+## --------------- PROJECTS --------------------------
+
+### Capture Projects /projects
+[GET] : {}
+
+### Create Project /project
+[POST] : {projectModel}
+
+### Capture project /project/:id
+[GET] : {}

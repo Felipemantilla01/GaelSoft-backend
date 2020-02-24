@@ -22,6 +22,7 @@ const db = 'mongodb://localhost:27017/GaelSoft'
 const User = require('../models/user')
 const Task = require('../models/task')
 const Project = require('../models/project')
+const Sprint = require('../models/sprint')
 const mongoose = require('mongoose')
 
 mongoose.connect(db, err => {
@@ -31,7 +32,6 @@ mongoose.connect(db, err => {
         message.success('Connected to the Database', from)
     }
 })
-
 
 function verifyToken(req, res, next) {
     //console.log(req.headers)
@@ -100,7 +100,6 @@ router.post('/register', async (req, res) => {
         }
     })/** end verify the user email dont exists yet */
 })
-
 router.post('/login', (req,res)=>{
     header.setHeaders(res)
 
@@ -120,13 +119,13 @@ router.post('/login', (req,res)=>{
 
                 bcrypt.compare(userData.password,user.password).then(same=>{
                     if(same){
-                        let payload = { subject: user.username}
+                        let payload = { subject: user._id}
                         let token = jwt.sign(payload, environment.secretKey/*, { expiresIn: 60 * 60 }*/)
                         res.status(200).send(
                             {
                                 token,
                                 username: user.username,
-                                role:user.role
+                                _id:user._id
                             }
                         )
                     }
@@ -143,7 +142,6 @@ router.post('/login', (req,res)=>{
     
 
 })
-
 router.get('/users', (req,res)=>{
     header.setHeaders(res)
     User.find({}, (err,users)=>{
@@ -154,6 +152,48 @@ router.get('/users', (req,res)=>{
         }
     })
 })
+router.get('/users/:id/projects', verifyToken ,async (req,res)=>{
+    let userId = req.params.id
+
+    
+
+    try {
+        //capturamos los proyectos propios
+        let filterOwn = {
+            'lead': userId
+        }
+
+        let ownProjects = await Project.find(filterOwn)
+        //para capturar los proyectos en los cuales se participa es necesario tener el username 
+        // por lo cual capturaremos el username de la base de datos.
+        let user = await User.findOne({ _id: userId })
+
+        //console.log(user)
+        let partProjects = await Project.find({ participants: { _id: userId, username: user.username } })
+        //console.log(partProjects)
+
+        res.status(200).send({ ownProjects, partProjects })
+    } catch (error) {
+        res.status(500).send('Error Capturing Projects')
+    }
+})
+
+
+router.get('/users/:idUser/projects/:idProject/tasks', verifyToken, async (req,res)=>{
+    let userId = req.params.idUser
+    let projectId = req.params.idProject
+
+   try {
+        //console.log(userId)
+    //console.log(projectId)
+    
+    let tasks = await Task.find({'project':{_id:projectId}, 'assignee._id':userId })
+    //console.log(tasks)
+    res.status(200).send(tasks)
+   } catch (error) {
+       res.status(500).send('Error capturing user and project tasks')
+   }
+})
 
 
 /** directories */
@@ -162,6 +202,8 @@ router.get('/', (req, res) => {
     res.status(200).send({ status: 'ok', api: 'api v1', desc: 'first implementation' })
 })
 
+
+/** ROUTES FOR TASKS */
 router.get('/tasks', verifyToken,(req, res) => {
     
     Task.find({}, (err, tasks)=>{
@@ -173,7 +215,6 @@ router.get('/tasks', verifyToken,(req, res) => {
     })
 
 })
-
 router.post('/tasks', verifyToken, (req,res)=>{
     message.error(req.username,from)
     let taskData = req.body
@@ -190,7 +231,6 @@ router.post('/tasks', verifyToken, (req,res)=>{
     })
     
 })
-
 router.put('/tasks', verifyToken, async (req,res)=>{
     taskData = req.body
     //console.log(taskData)
@@ -236,7 +276,6 @@ router.put('/tasks', verifyToken, async (req,res)=>{
 
 
 })
-
 router.delete('/tasks/:id', verifyToken, async (req,res)=>{
     
     let _id = req.params.id
@@ -253,8 +292,6 @@ router.delete('/tasks/:id', verifyToken, async (req,res)=>{
     
 
 })
-
-
 router.get('/tasks/:id/comments', verifyToken, async (req,res)=>{
     let _id = req.params.id
     
@@ -266,7 +303,6 @@ router.get('/tasks/:id/comments', verifyToken, async (req,res)=>{
     }
     
 })
-
 router.post('/tasks/:id/comments', verifyToken, async (req, res) => {
     try {
         let taskData = req.body
@@ -291,6 +327,8 @@ router.post('/tasks/:id/comments', verifyToken, async (req, res) => {
 
 })
 
+
+/** ROUTES FOR PROJECTS */
 router.post('/projects', verifyToken, async (req,res)=>{
     let projectData = req.body
     projectData.lead = req.username
@@ -307,23 +345,81 @@ router.post('/projects', verifyToken, async (req,res)=>{
     })
 
 })
-
-router.get('/projects', verifyToken, async (req,res)=>{
-   
-    
+router.get('/projects/:id/tasks',verifyToken ,async (req,res)=>{
+    let _id = req.params.id
+    //console.log(_id)
     try {
-        let projects = await Project.find({})
-        res.status(200).send(projects)
-        // console.log(projects)
+        let tasks = await Task.find({project:{_id:_id}})
+        res.status(200).send(tasks)
     } catch (error) {
-        res.status(500).send('Error capturing the projects')
+        res.status(500).send('Error capturing information from the project')
     }
+
     
+})
 
-   
+router.get('/projects/:id', verifyToken, async (req,res)=>{
+    let _id = req.params.id
+    //console.log(_id)
+    try {
+        let project = await Project.findById({_id})
+        res.status(200).send(project)
+    } catch (error) {
+        res.status(500).send('Error capturing information from the project')
+    }
 
+    
 })
 
 
+/** ROUTES FOR SPRINTS */
+
+/** create a new sprint for a selected project  */
+router.post('/projects/sprints', verifyToken, async (req,res)=>{
+    
+    let sprintData = req.body
+    let sprint = new Sprint(sprintData)
+    
+    sprint.save((err,sprintSaved)=>{
+        if(err){
+            res.status(500).send('Error trying to save the sprint, try again')
+        }else{
+            res.status(200).send(sprintSaved)
+        }
+    })
+})
+
+/** get all sprints */
+router.get('/projects/sprints', verifyToken, async (req,res)=>{
+    
+    try {
+        let sprints = await Sprint.find({})
+        res.status(200).send(sprints)
+    } catch (error) {
+        res.status(200).send('Error capturing the sprints, try again')
+    }
+    
+
+})
+
+/** get sprints for a selected project */
+router.get('/projects/:id/sprints', async (req,res)=>{
+    
+    let filter = {
+        project:{
+            _id:req.params.id
+        }
+    }
+    
+    try {
+        let sprints = await Sprint.find(filter)
+        res.status(200).send(sprints)
+    
+    } catch (error) {
+        res.status(200).send('Error capturing the sprints, try again')
+    }
+    
+
+})
 
 module.exports = router

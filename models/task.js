@@ -4,7 +4,10 @@ const Schema = mongoose.Schema
 const taskSchema = new Schema({
     title:String,
     description:String,
-    project:String,
+    project:{
+        _id: {type:String, default:''}
+    },
+    sprint:{type:String, default:''},
     type:{
         name:String,
         icon:String
@@ -16,7 +19,7 @@ const taskSchema = new Schema({
     },
     assignee:{        
         at:{ type: Date, default: Date.now },
-        to:{ type: String, default: 'MASTER' }
+        _id:{ type: String, default: 'MASTER' }
     },
     created:{
         at: { type: Date, default: Date.now },
